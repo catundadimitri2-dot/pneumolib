@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0c1118">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>PneumoLib — Dr. Dimitri Catunda</title>
+<style>
+:root {
+  --bg:#0c1118; --bg2:#111826; --card:#171f2b; --line:#2a3546;
+  --text:#e9eef6; --muted:#93a0b5; --accent:#3dcea8; --accent2:#6aa5ff;
+  --warn:#f0c36d; --pin:#3dcea8; --danger:#ff8b8b;
+  --safe: env(safe-area-inset-bottom, 0px);
+}
+* { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html,body { margin:0; padding:0; background:var(--bg); color:var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Ubuntu, sans-serif;
+  font-size:16px; line-height:1.45; }
+body { min-height:100dvh; }
+button, input, textarea { font: inherit; color: inherit; }
+.app { max-width:520px; margin:0 auto; min-height:100dvh; background:linear-gradient(180deg,#0c1118 0%,#101820 100%);
+  padding:12px 16px calc(24px + var(--safe)); }
+.hidden { display:none !important; }
+.top { display:flex; align-items:center; gap:10px; margin-bottom:14px; }
+.back { border:0; background:var(--card); color:var(--text); width:40px; height:40px; border-radius:12px;
+  flex:0 0 40px; cursor:pointer; font-size:20px; }
+.brand { flex:1; min-width:0; }
+.brand h1 { margin:0; font-size:1.15rem; letter-spacing:.02em; }
+.brand p { margin:2px 0 0; color:var(--muted); font-size:.78rem; }
+.search { width:100%; background:var(--card); border:1px solid var(--line); border-radius:14px;
+  padding:12px 14px; margin:0 0 14px; outline:none; }
+.search:focus { border-color:var(--accent); }
+.list { display:flex; flex-direction:column; gap:10px; }
+.card { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:14px 14px 14px 16px;
+  cursor:pointer; display:flex; gap:12px; align-items:flex-start; text-align:left; width:100%; }
+.card:active { transform:scale(.99); }
+.num { width:28px; height:28px; border-radius:9px; background:#14352e; color:var(--accent);
+  display:flex; align-items:center; justify-content:center; font-weight:700; font-size:.85rem; flex:0 0 28px; }
+.card h2 { margin:0 0 4px; font-size:.98rem; font-weight:650; }
+.card p, .meta { margin:0; color:var(--muted); font-size:.8rem; }
+.date { color:var(--accent2); font-size:.75rem; font-weight:600; }
+.empty { color:var(--muted); text-align:center; padding:28px 10px; }
+.lesson-block { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:14px; margin-bottom:12px; }
+.lesson-block h3 { margin:0 0 8px; font-size:1rem; }
+.lesson-block ul { margin:0; padding-left:18px; }
+.lesson-block li { margin:0 0 6px; }
+.upd { border:1px dashed #3b4d3c; background:#122018; border-radius:14px; padding:12px; margin-top:8px; }
+.upd label { display:block; color:var(--accent); font-weight:700; font-size:.82rem; margin-bottom:6px; }
+.upd textarea { width:100%; min-height:88px; background:transparent; border:0; outline:none; resize:vertical; color:var(--text); }
+.atlas { background:var(--card); border:1px solid var(--line); border-radius:16px; overflow:hidden; margin:14px 0 10px; }
+.atlas h3 { margin:0; padding:12px 14px 8px; font-size:1rem; }
+.stage { position:relative; background:#0a0e14; }
+.stage img { display:block; width:100%; height:auto; vertical-align:middle; }
+.pin { position:absolute; width:28px; height:28px; border-radius:50%; border:2px solid #06241d;
+  background:var(--pin); color:#06241d; font-weight:800; font-size:.78rem; transform:translate(-50%,-50%);
+  cursor:pointer; box-shadow:0 0 0 4px rgba(61,206,168,.25); }
+.pin.dim { opacity:.28; }
+.pin.on { background:var(--accent2); box-shadow:0 0 0 5px rgba(106,165,255,.35); }
+.tabs { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; padding:10px; }
+.tabs button { border:0; background:var(--bg2); color:var(--muted); border-radius:10px; padding:9px 4px;
+  font-size:.68rem; font-weight:650; cursor:pointer; }
+.tabs button.active { background:#14352e; color:var(--accent); }
+.pop { margin:0 10px 12px; background:var(--bg2); border:1px solid var(--line); border-radius:14px; padding:12px; }
+.pop header { display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:8px; }
+.pop h4 { margin:0; font-size:.95rem; }
+.pop .x { border:0; background:transparent; color:var(--muted); font-size:1.2rem; cursor:pointer; }
+.pop section { margin:0 0 8px; }
+.pop dt { color:var(--accent2); font-size:.72rem; text-transform:uppercase; letter-spacing:.04em; font-weight:700; }
+.pop dd { margin:2px 0 0; font-size:.88rem; }
+.note { color:var(--muted); font-size:.72rem; padding:0 4px 8px; }
+</style>
+</head>
+<body>
+<div class="app">
+
+<section id="screen-cursos">
+  <div class="top">
+    <div class="brand">
+      <h1>PneumoLib</h1>
+      <p>Pós em Pneumologia · Einstein 2026 · Dr. Dimitri Catunda</p>
+    </div>
+  </div>
+  <input class="search" id="q" type="search" placeholder="Buscar cursos..." autocomplete="off">
+  <div class="list" id="curso-lista"></div>
+</section>
+
+<section id="screen-modulos" class="hidden">
+  <div class="top">
+    <button class="back" id="back1" aria-label="Voltar">‹</button>
+    <div class="brand"><h1 id="mod-title">Módulos</h1><p id="mod-sub"></p></div>
+  </div>
+  <div class="list" id="mod-lista"></div>
+</section>
+
+<section id="screen-aula" class="hidden">
+  <div class="top">
+    <button class="back" id="back2" aria-label="Voltar">‹</button>
+    <div class="brand"><h1 id="aula-title">Aula</h1><p id="aula-sub"></p></div>
+  </div>
+  <div id="aula-body"></div>
+</section>
+
+</div>
+<script>
+const IMG = "https://upload.wikimedia.org/wikipedia/commons/0/0b/3D_Medical_Animation_Bronchial_Airways_terminating_ends.jpg";
+
+const atlasPins = [
+  {id:1, nome:"Traqueia", x:20.2, y:13.5, groups:["vias"],
+    anatomia:"Tubo cartilaginoso medianamente no pescoço e mediastino superior, da laringe até a carina (~T4–T5).",
+    fisio:"Conduz ar, aquece e umidifica. A carina é zona reflexógena de tosse. Obstrução alta gera estridor.",
+    clinica:"Estreitamento, desvio ou compressão em TC; importante em IOT, estenose pós-intubação e massas mediastinais."},
+  {id:2, nome:"Pulmões", x:11.5, y:54, groups:["superficie"],
+    anatomia:"Dois órgãos parenquimatosos: direito com 3 lobos, esquerdo com 2. Recobertos por pleura visceral.",
+    fisio:"Hematose, equilíbrio ácido-base e reserva ventilatória. A complacência depende de tecido elástico e surfactante.",
+    clinica:"Inspectar simetria, expansibilidade e ruídos. Padrões restritivo vs obstrutivo orientam a investigação."},
+  {id:3, nome:"Brônquios", x:21, y:36, groups:["vias"],
+    anatomia:"Brônquios principais direito (mais vertical) e esquerdo; depois lobares e segmentares, com cartilagem.",
+    fisio:"Distribuição do fluxo. O direito favorece aspiração. Calibre regulado por músculo liso e inflamação.",
+    clinica:"Sibilos e roncos; impacto de asma/DPOC e corpo estranho. Base da terapêutica inalatória."},
+  {id:4, nome:"Bronquíolos", x:33.2, y:40, groups:["vias"],
+    anatomia:"Vias <2 mm, sem cartilagem. Bronquíolos terminais e respiratórios abrem o ácino.",
+    fisio:"Principal sítio de resistência nas doenças obstrutivas pequenas. Hiperinsuflação e air trapping nascem aqui.",
+    clinica:"Bronquiolite, DPOC e asma pequena via. TC com mosaic attenuation e captação heterogênea."},
+  {id:5, nome:"Vasos pulmonares", x:70.5, y:28.5, groups:["vasos"],
+    anatomia:"Artéria pulmonar (sangue venoso), veias pulmonares (sangue oxigenado) e rede linfática hilar.",
+    fisio:"Circuito de baixa pressão. Hipóxia alveolar causa vasoconstrição. Recrutamento capilar no exercício.",
+    clinica:"TEP, hipertensão pulmonar, congestão na IC e cor pulmonale na DPOC avançada."},
+  {id:6, nome:"Alvéolos", x:72, y:67, groups:["alveolo"],
+    anatomia:"Sacos de troca com epitélio (pneumócitos I e II), interstício fino e capilares. Surfactante reduz tensão.",
+    fisio:"Difusão O2/CO2. Relação V/Q determina eficiência da hematose. Colapso se falta surfactante.",
+    clinica:"Enfisema destrói paredes; pneumonia e edema alagam o espaço; fibrose engrossa o interstício."}
+];
+
+const aulasAsmaDpoc = [
+  {id:"a1", n:1, data:"24/09/2026", titulo:"Fisiopatologia da asma, diagnóstico e avaliação de controle",
+    bullets:[
+      "Inflamação crônica das vias aéreas, hiper-responsividade e limitação variável ao fluxo.",
+      "Fenótipos T2-alto (eos, IgE, alergia) versus T2-baixo ajudam a escolher o caminho terapêutico.",
+      "Diagnóstico: história de sibilos, dispneia, tosse ou aperto + variação documentada da função (VEF1/PFE).",
+      "Espirometria com prova broncodilatadora; PFE seriado quando a curva for normal e a suspeita persistir.",
+      "Controle: sintomas diurnos e noturnos, resgate, limitação de atividade, exacerbações e função pulmonar.",
+      "ACT/ACQ auxiliam o seguimento; o alvo é controle e redução de risco futuro."
+    ]},
+  {id:"a2", n:2, data:"24/09/2026", titulo:"Bases do tratamento da asma",
+    bullets:[
+      "Anti-inflamatório inalatório é a base; CI + formoterol como manutenção e resgate (MART) é estratégia moderna.",
+      "SABA isolado não deve ser a única terapia de manutenção.",
+      "Escada: ajustar CI, associar LABA, considerar LAMA, antileucotrieno e, na grave, biológicos.",
+      "Biológicos conforme o eixo: anti-IgE, anti-IL-5/5R, anti-IL-4R e anti-TSLP.",
+      "Checar técnica inalatória, adesão, fatores ambientais e comorbidades antes de subir o degrau.",
+      "Plano de ação escrito para piora e exacerbação."
+    ]},
+  {id:"a3", n:3, data:"01/10/2026", titulo:"Fisiopatologia da DPOC, diagnóstico e avaliação da gravidade",
+    bullets:[
+      "Limitação persistente ao fluxo, em geral progressiva, por enfisema e/ou bronquiolite crônica.",
+      "Tabaco e outras exposições (fumaça, poeiras, poluição) são os principais fatores.",
+      "Diagnóstico: sintomas + exposição + VEF1/CVF < 0,7 após broncodilatador.",
+      "Gravidade espirométrica GOLD 1–4 pelo VEF1; sintomas por mMRC e CAT.",
+      "Risco de exacerbação e contagem de eosinófilos sanguínea orientam o grupo e o uso de CI.",
+      "Classificação atual em grupos A, B e E."
+    ]},
+  {id:"a4", n:4, data:"01/10/2026", titulo:"Bases do tratamento da DPOC",
+    bullets:[
+      "Parar de fumar é a medida com maior impacto na história natural.",
+      "Broncodilatadores de longa duração (LAMA, LABA ou combinação) controlam sintomas e reduzem exacerbações.",
+      "CI reservado a exacerbações de repetição e eos elevados; uso liberal aumenta pneumonia.",
+      "Reabilitação pulmonar, vacinas e atividade física são pilares não farmacológicos.",
+      "O2 domiciliar quando hipoxemia crônica preenche critérios; VNI em hipercapnia selecionada.",
+      "Exacerbação: broncodilatador de resgate, corticoide sistêmico curto e antibiótico se indicado."
+    ]},
+  {id:"a5", n:5, data:"08/10/2026", titulo:"Comorbidades no paciente com asma e DPOC — avaliação e tratamento da rinite",
+    bullets:[
+      "Via aérea única: rinite e asma convivem com alta frequência e se agraviam mutuamente.",
+      "Perguntar sobre obstrução nasal, prurido, rinorreia, espirros e olfato em toda consulta.",
+      "Corticosteroide nasal é a base da rinite persistente; anti-histamínico ajuda no componente alérgico.",
+      "Controlar a rinite pode melhorar sintomas e o controle da asma.",
+      "Investigar sinusopatia e polipose, sobretudo na asma grave tipo 2.",
+      "Evicção de alérgenos e irritantes quando factível; revisar sprays e técnica nasal."
+    ]},
+  {id:"a6", n:6, data:"08/10/2026", titulo:"Impacto das alterações climáticas e poluição ambiental na saúde",
+    bullets:[
+      "MP2,5, ozônio e NO2 pioram asma e DPOC e aumentam idas à emergência.",
+      "Ondas de calor, incêndios florestais e mudança no calendário de pólens ampliam a exposição.",
+      "Orientar o paciente a consultar o índice de qualidade do ar e evitar exercício ao ar livre nos picos.",
+      "Máscara e ambientes filtrados ajudam em episódios de fumaça.",
+      "Crianças, idosos, doença grave e baixa renda são mais vulneráveis.",
+      "Incluir poluição e calor no plano de ação das exacerbações."
+    ]},
+  {id:"a7", n:7, data:"15/10/2026", titulo:"Comorbidades: insuficiência cardíaca",
+    bullets:[
+      "Dispneia é compartilhada: DPOC/asma e IC se sobrepõem e atrasam o diagnóstico.",
+      "BNP/NT-proBNP, ecocardiograma e sinais de congestão separam hiperinsuflação de falência cardíaca.",
+      "Beta-bloqueador cardiosseletivo, quando indicado, é em geral seguro na DPOC estável.",
+      "Corticoide sistêmico pode reter volume; excesso de beta-2 agrava taquicardia na IC descompensada.",
+      "Otimizar as duas doenças no mesmo plano: congestão, broncoespasmo e reabilitação.",
+      "Internação conjunta de descompensação cardíaca e exacerbação respiratória é comum — revisar a alta com os dois eixos."
+    ]},
+  {id:"a8", n:8, data:"15/10/2026", titulo:"Comorbidades: DAC e arritmias",
+    bullets:[
+      "A DPOC eleva o risco cardiovascular; exacerbações se associam a infarto e eventos agudos.",
+      "Hipoxemia, inflamação sistêmica e taquicardia por beta-agonistas pesam no miocárdio.",
+      "Rastrear angina, equivalente isquêmico e palpitações; ECG na piora não explicada.",
+      "FA e outras arritmias são frequentes; ajustar frequência e anticoagulação pelo risco.",
+      "Cuidado com QT (macrolídeos) e com metilxantinas, se ainda utilizadas.",
+      "Reabilitação e controle de PA, lipídios e tabaco fazem parte do tratamento respiratório."
+    ]}
+];
+
+const cursos = [
+  {id:"infec", n:1, nome:"Doenças infecciosas e urgências em medicina respiratória"},
+  {id:"intersticio", n:2, nome:"Doenças intersticiais pulmonares e doenças vasculares pulmonares"},
+  {id:"obstrutivas", n:3, nome:"Doenças obstrutivas e distúrbios do sono",
+    modulos:[
+      {id:"m1", n:1, nome:"Em elaboração"},
+      {id:"m2", n:2, nome:"Asma e DPOC", aulas:aulasAsmaDpoc},
+      {id:"m3", n:3, nome:"Distúrbios do sono — em elaboração"}
+    ]},
+  {id:"fisio", n:4, nome:"Fisiologia respiratória e do exercício, função pulmonar e reabilitação"},
+  {id:"onco", n:5, nome:"Oncologia torácica, transplante pulmonar e interfaces"},
+  {id:"teste", n:6, nome:"Pré e Pós-teste"}
+];
+
+let estado = {curso:null, modulo:null, view:"cursos"};
+
+function $(id){ return document.getElementById(id); }
+function show(id){
+  ["screen-cursos","screen-modulos","screen-aula"].forEach(s => $(s).classList.toggle("hidden", s!==id));
+  window.scrollTo(0,0);
+}
+function renderCursos(filtro=""){
+  const q = filtro.trim().toLowerCase();
+  const lista = cursos.filter(c => !q || (c.n+" "+c.nome).toLowerCase().includes(q));
+  $("curso-lista").innerHTML = lista.length ? lista.map(c => `
+    <button class="card" data-curso="${c.id}">
+      <span class="num">${c.n}</span>
+      <span><h2>${c.nome}</h2><p>${c.modulos ? c.modulos.length+" módulos" : "Módulos em elaboração"}</p></span>
+    </button>`).join("") : `<div class="empty">Nenhum curso encontrado.</div>`;
+  $("curso-lista").querySelectorAll("[data-curso]").forEach(el => {
+    el.onclick = () => abrirCurso(el.dataset.curso);
+  });
+}
+function abrirCurso(id){
+  const c = cursos.find(x => x.id===id);
+  estado.curso = c; estado.view = "modulos";
+  $("mod-title").textContent = c.nome;
+  $("mod-sub").textContent = "Toque num módulo para ver as aulas";
+  if(!c.modulos){
+    $("mod-lista").innerHTML = `<div class="empty">Módulos deste curso ainda estão em elaboração.</div>`;
+  } else {
+    $("mod-lista").innerHTML = c.modulos.map(m => `
+      <button class="card" data-mod="${m.id}">
+        <span class="num">${m.n}</span>
+        <span><h2>Módulo ${m.n} — ${m.nome}</h2>
+        <p>${m.aulas ? m.aulas.length+" aulas" : "Conteúdo em elaboração"}</p></span>
+      </button>`).join("");
+    $("mod-lista").querySelectorAll("[data-mod]").forEach(el => {
+      el.onclick = () => abrirModulo(el.dataset.mod);
+    });
+  }
+  show("screen-modulos");
+}
+function abrirModulo(id){
+  const m = estado.curso.modulos.find(x => x.id===id);
+  estado.modulo = m;
+  if(!m.aulas){
+    estado.view = "aulas";
+    $("mod-title").textContent = `Módulo ${m.n} — ${m.nome}`;
+    $("mod-sub").textContent = estado.curso.nome;
+    $("mod-lista").innerHTML = `<div class="empty">Este módulo ainda está em elaboração.</div>`;
+    return;
+  }
+  estado.view = "aulas";
+  $("mod-title").textContent = `Módulo ${m.n} — ${m.nome}`;
+  $("mod-sub").textContent = estado.curso.nome;
+  $("mod-lista").innerHTML = m.aulas.map(a => `
+    <button class="card" data-aula="${a.id}">
+      <span class="num">${a.n}</span>
+      <span><div class="date">${a.data}</div><h2>Aula ${a.n} — ${a.titulo}</h2></span>
+    </button>`).join("");
+  $("mod-lista").querySelectorAll("[data-aula]").forEach(el => {
+    el.onclick = () => abrirAula(el.dataset.aula);
+  });
+}
+function escapeHtml(s){ return s.replace(/[&<>]/g, ch => ({'&':'&','<':'<','>':'>'}[ch])); }
+function abrirAula(id){
+  const a = estado.modulo.aulas.find(x => x.id===id);
+  $("aula-title").textContent = `Aula ${a.n}`;
+  $("aula-sub").textContent = a.data + " · " + estado.modulo.nome;
+  const key = "pneumolib-upd-"+estado.curso.id+"-"+estado.modulo.id+"-"+a.id;
+  const saved = localStorage.getItem(key) || "";
+  $("aula-body").innerHTML = `
+    <div class="lesson-block">
+      <h3>${escapeHtml(a.titulo)}</h3>
+      <ul>${a.bullets.map(b => `<li>${escapeHtml(b)}</li>`).join("")}</ul>
+      <div class="upd">
+        <label>Atualizações</label>
+        <textarea id="upd" placeholder="Cole aqui GINA 2028, GOLD novo e outras atualizações...">${escapeHtml(saved)}</textarea>
+      </div>
+    </div>
+    ${atlasHTML()}`;
+  $("upd").oninput = e => localStorage.setItem(key, e.target.value);
+  ligarAtlas();
+  show("screen-aula");
+}
+function atlasHTML(){
+  const pins = atlasPins.map(p =>
+    `<button class="pin" data-pin="${p.id}" style="left:${p.x}%;top:${p.y}%" aria-label="${p.nome}">${p.id}</button>`
+  ).join("");
+  return `
+    <div class="atlas">
+      <h3>Atlas pulmonar interativo</h3>
+      <div class="stage">
+        <img src="${IMG}" alt="Anatomia pulmonar 3D: pulmões, vias aéreas, vasos e alvéolos" width="1920" height="1080">
+        ${pins}
+      </div>
+      <div class="tabs">
+        <button data-tab="superficie" class="active">Superfície</button>
+        <button data-tab="vias">Vias aéreas</button>
+        <button data-tab="vasos">Vasculatura</button>
+        <button data-tab="alveolo">Alvéolo</button>
+      </div>
+      <div id="pin-card" class="pop hidden"></div>
+      <p class="note">Imagem: Wikimedia Commons — 3D Medical Animation, bronchial airways terminating ends (Scientific Animations, CC BY-SA).</p>
+    </div>`;
+}
+function ligarAtlas(){
+  const card = $("pin-card");
+  function highlight(group, id){
+    document.querySelectorAll(".pin").forEach(el => {
+      const p = atlasPins.find(x => x.id==el.dataset.pin);
+      el.classList.toggle("dim", group && !p.groups.includes(group));
+      el.classList.toggle("on", id && p.id==id);
+    });
+  }
+  document.querySelectorAll(".pin").forEach(el => {
+    el.onclick = () => {
+      const p = atlasPins.find(x => x.id==el.dataset.pin);
+      highlight(null, p.id);
+      card.classList.remove("hidden");
+      card.innerHTML = `
+        <header><h4>${p.id}. ${p.nome}</h4><button class="x" id="fechar-pin" aria-label="Fechar">×</button></header>
+        <section><dt>Anatomia</dt><dd>${p.anatomia}</dd></section>
+        <section><dt>Fisiopatologia</dt><dd>${p.fisio}</dd></section>
+        <section><dt>Clínica</dt><dd>${p.clinica}</dd></section>`;
+      $("fechar-pin").onclick = () => { card.classList.add("hidden"); highlight(currentTab, null); };
+    };
+  });
+  let currentTab = "superficie";
+  highlight(currentTab, null);
+  document.querySelectorAll(".tabs button").forEach(btn => {
+    btn.onclick = () => {
+      document.querySelectorAll(".tabs button").forEach(b => b.classList.toggle("active", b===btn));
+      currentTab = btn.dataset.tab;
+      highlight(currentTab, null);
+    };
+  });
+}
+$("q").oninput = e => renderCursos(e.target.value);
+$("back1").onclick = () => {
+  if (estado.view === "aulas") { abrirCurso(estado.curso.id); return; }
+  show("screen-cursos");
+};
+$("back2").onclick = () => {
+  abrirCurso(estado.curso.id);
+  if(estado.modulo && estado.modulo.aulas) abrirModulo(estado.modulo.id);
+};
+renderCursos();
+</script>
+</body>
+</html>
